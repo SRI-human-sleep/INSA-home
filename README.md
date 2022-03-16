@@ -9,4 +9,4 @@ Menghini, L., Yuksel, D., Prouty, D., Baker, F. C., King, C., & de Zambotti, M. 
 - `Appendix A - Diary form` includes the items of the electronic diary form used in the study
 - `Appendix B - Data pre-processing` includes the R code and the generated report of the data pre-processing procedures applied to the raw data (available upon request to the corresponding author)
 - `Appendix C - Data analysis` includes the R code and the generated report (with full detailed outputs) of the data analysis described in the article
-- `Appendix D - Data` includes the two datasets (`ema` with time-varying variables, and `demos` with demographic variables) generated with the data pre-processing script included in `Appendix B`
+- `Appendix D - Data` includes the two datasets generated with the data pre-processing script included in Appendix B: `ema` with time-varying variables, and `demos` with demographic variables

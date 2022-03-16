@@ -1,5 +1,5 @@
 # Wearable and mobile technology to characterize daily patterns of sleep, stress, pre-sleep worry and mood in adolescent insomnia
-The present respository include the appendices of the article
+This respository includes the appendices of the article:
 
 Menghini, L., Yuksel, D., Prouty, D., Baker, F. C., King, C., & de Zambotti, M. Wearable and mobile technology to characterize daily patterns of sleep, stress, pre-sleep worry and mood in adolescent insomnia
 

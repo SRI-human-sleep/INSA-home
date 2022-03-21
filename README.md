@@ -15,4 +15,6 @@ Menghini, L., Yuksel, D., Prouty, D., Baker, F. C., King, C., & de Zambotti, M. 
   - Part 2 - [**Characterization of sleep and diary ratings**](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis2.html)
   - Part 3 - [**Relationships between sleep and diary ratings**](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis3.html). This also includes the final outputs included in the main article.
 
-- **Appendix D** - `Data` includes the two datasets generated with the data pre-processing script included in Appendix B: `ema` with time-varying variables, and `demos` with demographic variables
+- **Appendix D** - `Data/` includes the two datasets generated with the data pre-processing script included in Appendix B, in both .RData and .csv format: 
+  - `ema` with time-varying variables
+  - `demos` with demographic variables

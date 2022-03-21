@@ -10,6 +10,8 @@ Menghini, L., Yuksel, D., Prouty, D., Baker, F. C., King, C., & de Zambotti, M. 
 
 - **Appendix B** - `Data pre-processing` includes the R code and the generated report of the data pre-processing procedures applied to the raw data (available upon request to the corresponding author). The full data pre-processing report is [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20B%20-%20Data%20pre-processing/insa%40home_dataProcessing.html).
 
-- **Appendix C** - `Data analysis` includes the R code and the generated reports of the data analysis described in the article. Data analysis is depicted at this page (Data preparation and descriptives) and this page (Modeling).
+- **Appendix C** - `Data analysis` includes the R code and the generated reports of the data analysis described in the article. Three reports are included: **Part 1 - Descriptives and phychometrics** ([depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis1.html)), **Part 2 - Characterization of sleep and diary ratings** ([depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis2.html)), and **Part 3 - Relationships between sleep and diary ratings** ([depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis3.html)).
+- 
+-   Data analysis is depicted at this page (Data preparation and descriptives) and this page (Modeling).
 
 - **Appendix D** - `Data` includes the two datasets generated with the data pre-processing script included in Appendix B: `ema` with time-varying variables, and `demos` with demographic variables

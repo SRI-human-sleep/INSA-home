@@ -1,5 +1,6 @@
 ---
 title: "Wearable and mobile technology to characterize daily patterns of sleep, stress, pre-sleep worry and mood in adolescent insomnia - Appendix C: Data analysis code and output"
+subtitle: "Part 1: Descriptives and Psychometrics"
 author: "Luca Menghini, PhD, Dilara Yüksel, PhD, Devin Prouty, PhD, Fiona C Baker PhD, Christopher King, PhD, Massimiliano de Zambotti, PhD"
 bibliography: [packagesAn.bib]
 nocite: '@*'
@@ -25,14 +26,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The present document includes the analytical steps implemented to characterize and explore the antecedents of sleep patterns in a sample of older adolescents with (N = 47; 31 girls) and without (N = 46; 28 girls) DSM-5 insomnia.
 
-The data processing pipeline is [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20B%20-%20Data%20pre-processing/insa%40home_dataProcessing.html).
+The data pre-processing pipeline is [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20B%20-%20Data%20pre-processing/insa%40home_dataProcessing.html).
 
-Here, we **prepare the data** for the main analyses, we evaluate the **psychometric proprieties** of the aggregate self-report scale, and we **summarize** the main variables collected for the present study. Then, the processed datasets with aggregate measures are exported to be used for fitting a series of linear regression models, [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis2.html).
+Here, we **prepare the data** for the main analyses, we evaluate the **psychometric proprieties** of the aggregate self-report scale, and we **summarize** the main variables collected for the present study. Then, the processed datasets with aggregate measures are exported to be used for fitting a series of linear regression models, [depicted at this page (Characterization of sleep and diary ratings)](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis2.html) and [at this page (Relationships between sleep and diary ratings)](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis3.html).
 
 <br>
 
 The following R packages are used in this document (see References section):
-```{r }
+```{r warning=FALSE,message=FALSE}
 # required packages
 packages <- c("ggplot2","gridExtra","lubridate","reshape2","dplyr","lavaan","MuMIn","lme4","tcltk","Rmisc","Hmisc")
 
@@ -50,7 +51,7 @@ knitr::write_bib(c(.packages(), packages),"packagesAn.bib")
 
 ## 1.1. Data loading
 
-Here, we load the day-by-day (`ema`) and the demographic dataset (`demos`) resulting from the processing pipeline linked above.
+Here, we load the long-form `ema` and the wide-form `demos` dataset resulting from the [processing pipeline](https://sri-human-sleep.github.io/INSA-home/Appendix%20B%20-%20Data%20pre-processing/insa%40home_dataProcessing.html).
 ```{r warning=FALSE,message=FALSE}
 # removing all objets from the workspace
 rm(list=ls())
@@ -110,12 +111,12 @@ ema <- ema[,c(1:AD,ncol(ema)-1,ncol(ema),(AD+1):(ncol(ema)-2))]
 
 ### 1.2.2. % light, deep & REM
 
-Here, we recode the variables `light`, `deep` and `REM` as **percentage of `NREM` and `REM` sleep over `TST`**.
+Here, we recode the variables `light`, `deep` and `REM` as **percentage of of time in each sleep stage** over `TST`.
 ```{r fig.width=10,fig.height=4,warning=FALSE,message=FALSE}
-# sanity check (no value > TST)
+# sanity check (no values > TST)
 cat("Sanity check:",nrow(ema[!is.na(ema$light) & (ema$light>ema$TST | ema$deep>ema$TST | ema$rem>ema$TST),])==0)
 
-# sanity check (sum: no value > TST)
+# sanity check (sum: no values > TST)
 ema$totalStages <- apply(ema[,c("light","deep","rem")],1,sum)
 cat("Sanity check:",nrow(ema[!is.na(ema$light) & ema$TST!=ema$totalStages,])==0)
 
@@ -200,7 +201,7 @@ grid.arrange(ggplot(ema,aes(TotalSteps))+geom_histogram(),ggplot(ema,aes(TotalSt
 
 ### 1.2.5. Late responses
 
-Here, we create the variable `diary.nextDay` to mark those cases in which daily diaries were **filled on the following day**, that is we check the No. of cases with **diary `StartedTime` after sleep `EndTime`**, and the No. of cases with **valid diary but not sleep data with a `StartedTime` later than 6 AM**.
+Here, we create the variable `diary.nextDay` to mark those cases in which daily diaries were **filled on the following day**, that is we we mark the cases with `dailyDiary` `StartedTime` after `sleepLog` `EndTime`, and those with valid `dailyDiary` but invalid `sleepLog` data with a `StartedTime` later than 6 AM.
 ```{r fig.width=10,fig.height=2.5,warning=FALSE,message=FALSE}
 # marking cases with StartedTime > EndTime
 ema[!is.na(ema$dailyStress) & !is.na(ema$TIB),c("diary.nextDay","diary.nextDay2")] <- 0
@@ -277,7 +278,7 @@ summary(ema[,c("weekday","weekday.sleep")])
 
 ### 1.2.7. COVID-19 emergency
 
-Here, the `ActivityDate` variable is used to create the variable `covid19` **highlighting the cases that were observed during the COVID-19 emergency**, whose beginning in the San Francisco Bay Area was identified at **March 20th, 2020**.
+Here, the `ActivityDate` variable is used to create the variable `covid19` highlighting the **cases recorded during the COVID-19 emergency**, whose beginning in the San Francisco Bay Area was identified around **March 20th, 2020**.
 ```{r fig.width=10,fig.height=4,message=FALSE}
 # creating covid19 variable
 ema$covid19 <- "pre-COVID19"
@@ -413,7 +414,7 @@ str(ema)
 
 **sleepHR**
 
-31.`HR_NREM` = mean HR values (bpm) computed from all epochs categorized as NREM sleep
+31. `HR_NREM` = mean HR values (bpm) computed from all epochs categorized as NREM sleep
 
 32. `HR_REM` = mean HR values (bpm) computed from all epochs categorized as REM sleep
 
@@ -453,9 +454,12 @@ str(ema)
 
 Here, we evaluate the psychometric proprieties of the **psychological distress scale** resulting from the three Likert-type items submitted each evening: `stress`, `mood`, and `worry`.
 
-First, we load the `lavaan` and the `MuMIn` R packages, and we **negatively recode `mood`** so that higher scores reflect negative mood.
+<br>
+
+First, we load the required packages, and we **negatively recode** `mood` so that higher scores reflect negative mood, coherently with the other items.
 ```{r fig.width=10,fig.height=4,warning=FALSE,message=FALSE}
-library(lavaan); library(MuMIn) # loading lavaan R package
+# loading packages
+library(lavaan); library(MuMIn)
 
 # negatively recoding evening mood (higher values = negative mood)
 ema$mood <- 6 - ema$mood
@@ -588,7 +592,7 @@ itemsICC(data=ema,IDvar="ID",items=c("stress","worry","mood"))
 
 ## 2.2. Multilevel CFA
 
-Then, we perform a **Multilevel Confirmatory Factor Analysis** (MCFA) by specifying a measurement model that assumes a **configural cluster construct** (with the same mono-factor structure at both levels). Following [Jak & Jorgensen (2017)](#ref), we also test weak and strong **cross-level isomorphism**. The `fit.ind` function is used to optimize model comparison.
+Then, we perform a **Multilevel Confirmatory Factor Analysis** (MCFA) by specifying a measurement model that assumes a **configural cluster construct** (with the same mono-factor structure at both levels). Following [Jak & Jorgensen (2017)](#ref), we also test weak and strong **cross-level isomorphism**. The `fit.ind` function from https://github.com/Luca-Menghini/LuMenPsy.Rfunctions is used to optimize model comparison.
 
 <details><summary>**show fit.ind**</summary><p>
 ```{r echo=TRUE}
@@ -765,7 +769,7 @@ fit.weak.fix <- cfa(model=gsub("rho2",varlv2*0.15,
 
 <br>
 
-As an alternative solution, we inspect the changes in residual variances following the removal of each participant. This is done with the `sample.fluct` and `plot.infl` functions.
+As an alternative solution, we inspect the changes in residual variances following the removal of each participant. This is done with the `sample.fluct` and `plot.infl` functions from https://github.com/Luca-Menghini/LuMenPsy.Rfunctions.
 
 <details><summary>**show sample.fluct**</summary><p>
 ```{r echo=TRUE}
@@ -1110,7 +1114,7 @@ ema$fs <- ema$fs.b + ema$fs.w
 
 ## 2.3. Reliability
 
-Here, we compute reliability coefficients at both the within and the between level, both based on the MCFA results (following [Geldhof, 2014](#ref)) and based on the generalizability theory (following [Cranford et al., 2006](#ref)). The `MCFArel` and `GTHEORYrel` functions are used to optimize the analyses:
+Here, we compute reliability coefficients at both the within and the between level, both based on the MCFA results (following [Geldhof, 2014](#ref)) and based on the generalizability theory (following [Cranford et al., 2006](#ref)). The `MCFArel` and `GTHEORYrel` functions from https://github.com/Luca-Menghini/LuMenPsy.Rfunctions are used to optimize the analyses:
 
 <details><summary>**show MCFArel**</summary>
 <p>
@@ -1486,7 +1490,7 @@ knitr::kable(desc)
 
 ## 3.4. Correlations 
 
-Here, we use the `multicorr` function to compute the inter-individual (shown below the main diagonal) and the intra-individual correlations (shown above the main diagonal) between the focal continuous variables.
+Here, we use the `multicorr` function from https://github.com/Luca-Menghini/LuMenPsy.Rfunctions to compute the inter-individual (shown below the main diagonal) and the intra-individual correlations (shown above the main diagonal) between the focal continuous variables.
 
 <details><summary>**show multicorr**</summary>
 <p>
@@ -2691,7 +2695,7 @@ cat(nrow(df[df$mood.VE==1,]),"cases with very or extreme mood,",
 
 # 4. Data export
 
-Finally, we export the recoded `ema` and `demos` datasets to be used in the main analyses, [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis2.html).
+Finally, we export the recoded `ema` and `demos` datasets to be used in the main analyses. Click [here for Part 2 (Characterization of sleep and diary ratings)](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis2.html) and [here for Part 3 (Relationships between sleep and diary ratings)](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis3.html).
 ```{r echo=TRUE,fig.width=11,fig.height=6,warning=FALSE,message=FALSE}
 save(ema,file="emaFINAL.RData")
 save(demos,file="demosFINAL.RData")

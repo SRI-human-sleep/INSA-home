@@ -1,5 +1,5 @@
 ---
-title: "Wearable and mobile technology to characterize daily patterns of sleep, stress, pre-sleep worry and mood in adolescent insomnia - Appendix C: Data analysis code and output"
+title: "Wearable and mobile technology to characterize daily patterns of sleep, stress, pre-sleep worry, and mood in adolescent insomnia - Appendix C: Data analysis code and output"
 subtitle: "Part 2: Characterization of sleep and diary ratings"
 author: "Luca Menghini, PhD, Dilara Yüksel, PhD, Devin Prouty, PhD, Fiona C Baker PhD, Christopher King, PhD, Massimiliano de Zambotti, PhD"
 bibliography: [packagesAn.bib]
@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The present document includes the analytical steps implemented to characterize and explore the antecedents of sleep patterns in a sample of older adolescents with (N = 47; 31 girls) and without (N = 46; 28 girls) DSM-5 insomnia.
 
-The data processing pipeline is [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20B%20-%20Data%20pre-processing/insa%40home_dataProcessing.html), whereas the first part of data analysis (data preparation, psychometrics, and descriptives) is [depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis1.html). The latter script resulted in the following long-form `ema` and wide-form `demos` datasets:
+The data processing pipeline is **[depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20B%20-%20Data%20pre-processing/insa%40home_dataProcessing.html)**, whereas the first part of data analysis (data preparation, psychometrics, and descriptives) is **[depicted at this page](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis1.html)**. The former script resulted in the following long-form `ema` and wide-form `demos` datasets:
 ```{r }
 # removing all objets from the workspace
 rm(list=ls())
@@ -43,11 +43,11 @@ Sys.setenv(tz="GMT")
 
 Here, we use **generalized linear mixed-effects regression** (GLMER) models to examine the following relationships:
 
-1. `s.archit`, `s.timing`, `s.variab`, and `s.auton` variables are predicted by meaningful covariates (Model M1: `SO.num`, `TotalSteps1000`, `weekday`, and `BMI`), the `insomnia` group (M2), participants' `sex` (M3), and the interaction between `sex` and `insomnia` groups (M4), in order to **characterize sleep between groups**.
+1. `s.archit`, `s.timing`, `s.variab`, and `s.auton` variables are predicted by meaningful covariates (Model M1: `SO.num`, `TotalSteps1000`, `weekday`, `BMI`, and `age`), the `insomnia` group (M2), participants' `sex` (M3), and the interaction between `sex` and `insomnia` groups (M4), in order to **characterize sleep between groups**.
 
 2. daily diary ratings (`stress`, `worry`, and `mood`) and the aggregate ratings (`PsyDist` and `fs`) are predicted by meaningful covariates (M1: `TotalSteps1000` and `weekday`), the `insomnia` group (M2), participants' `sex` (M3), and the interaction between `sex` and `insomnia` groups (M4), in order to **characterize stress, worry, and mood between groups**.
 
-3. sleep measures are predicted by diary ratings. This analyses are [depicted in Part 3]((https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis3.html).
+3. sleep measures are predicted by diary ratings. This analyses are **[depicted in Part 3](https://sri-human-sleep.github.io/INSA-home/Appendix%20C%20-%20Data%20analysis/insa%40home_dataAnalysis3.html)**.
 
 <br>
 
@@ -92,12 +92,14 @@ library(lme4); library(ordinal); library(reshape2); library(MuMIn); library(sjPl
 #' @param nAGQ = argument from the lme4::glmer() function, see ?glmer
 #' @param mc.predictors = character vector of names of the predictors to be mean-centered
 #' @param gmc.predictors = character vector of names of the predictors to be grand-mean-centered
-#' @param outputs = character vector of the desired otucomes: "fit" for model diagnostics, "mComp" for model comparison, "coeff" for the coefficient table, "plotEff" for the effect plot(s), and "key.res" for the key results
+#' @param outputs = character vector of the desired outcomes: "fit" for model diagnostics, "mComp" for model comparison, "coeff" for the coefficient table, "plotEff" for the effect plot(s), and "key.res" for the key results
+#' @param mComp.baseline = character string indicating the name of the last predictor included in the baseline model to be compared with the subsequent models. If equal to NA (defult), the null model is used as the baseline model for comparison
+#' @param p.adjust.method = argument from the stats::p.adjust() function (see ?p.adjust) indicating which method should be used to correct the p-values obtained from the likelihood ratio test (default: NA, for no adjustment)
 #' @param coeff.models = name of the predictor(s) whose corresponding model(s) should be considered for the "coeff" output
 #' @param transform = argument from sjPlot::tab_model(), see ?tab_model
 #' @param coeff.models = model(s) to be considered for the "coeff" output
-#' @param plot.model = name of the predictor(s) whose model(s) should be considered for the "plotEff" output
-#' @param plot.pred = name of the predictor(s) to be plotted
+#' @param plot.model = character string indicating the name of the predictor(s) whose model(s) should be considered for the "plotEff" output
+#' @param plot.pred = character string indicating the name of the predictor(s) to be plotted
 #' @param show.data = argument from sjPlot::plot_model(), see ?plot_model
 #' @param dot.size = argument from sjPlot::plot_model(), see ?plot_model
 #' @param dodge = argument from sjPlot::plot_model(), see ?plot_model
@@ -105,14 +107,15 @@ library(lme4); library(ordinal); library(reshape2); library(MuMIn); library(sjPl
 #' @param ci.lv = argument from sjPlot::plot_model(), see ?plot_model
 #' @param y.lim = numeric vector of length 2 indicating the limits of the y-axis
 #' @param return.plot = booean. Should the plot be returned by the function? (default: FALSE)
-#' @param key.model = name of the predictor(s) whose model(s) should be considered for the "key.res" output
-#' @param key.predictor = name of the predictor to be considered by the "key.res" output
+#' @param key.model = character string indicating the name of the predictor(s) whose model(s) should be considered for the "key.res" output
+#' @param key.predictor = character string indicating the name of the predictor to be considered by the "key.res" output
 #' @param digits = number of digits for all numeric ouputs
 #' @param messages = boolean indicating whether a message should be printed for each operation (defult: FALSE)
 glmerAn <- function(modelType=c("GLM","GLMER"),long,wide,resp,fix.eff,cluster.ID="ID",timeVar="ActivityDate",REML=FALSE,
                     ran.eff="(1|ID)",family="normal",link="identity",nAGQ=1,mc.predictors=NA,gmc.predictors=NA,
-                    outputs=c("fit","mComp","coeff","plotEff","key.results"),coeff.models=NA,transform=NULL,
-                    plot.model=NA,plot.pred="all",show.data=FALSE,dot.size=1,dodge=0,ci.lv=.95,y.lim=NA,return.plot=FALSE,
+                    outputs=c("fit","mComp","coeff","plotEff","key.results"),mComp.baseline=NA,p.adjust.method=NA,
+                    coeff.models=NA,transform=NULL,plot.model=NA,plot.pred="all",
+                    show.data=FALSE,dot.size=1,dodge=0,ci.lv=.95,y.lim=NA,return.plot=FALSE,
                     key.model=NA,key.predictor=NA,digits=3,messages=TRUE){ 
   
   if(messages==TRUE){ cat("Running",modelType,"analysis of",resp,"...") }
@@ -262,28 +265,48 @@ glmerAn <- function(modelType=c("GLM","GLMER"),long,wide,resp,fix.eff,cluster.ID
   
   # model comparison - likelihood ratio test & Akaike weight
   if("mComp"%in%outputs | "key.results"%in%outputs){ 
-    if(messages==TRUE){ cat("\n\n - Running likelihood ratio test:") } # likelihood ratio test
+    # likelihood ratio test
+    if(messages==TRUE){ cat("\n\n - Running likelihood ratio test:") } 
     suppressMessages(suppressWarnings(require(knitr))); suppressMessages(suppressWarnings(require(MuMIn))) 
-    if(modelType=="CLMM"){ lrt <- as.data.frame(ordinal:::anova.clm(null.m,models[[1]])) # use anova.clm() to avoid env. issue
-    } else { lrt <- as.data.frame(suppressMessages(anova(null.m,models[[1]]))) }
-    for(i in 1:(length(models)-1)){ if(length(models)>=(i+1)){
-      if(modelType=="CLMM"){ lrt <- rbind(lrt,as.data.frame(ordinal:::anova.clm(models[[i]],models[[i+1]]))[2,]) 
-      } else { lrt <- rbind(lrt,as.data.frame(suppressMessages(anova(models[[i]],models[[i+1]])))[2,]) }}}
-    rownames(lrt) <- c("Null model",fix.eff)
-    for(i in nrow(lrt):2){ if(lrt[i,ncol(lrt)] < .05){ if(messages==TRUE){ cat("\n   Selected model:",rownames(lrt)[i]) }
-                             break }}
-    if("mComp"%in%outputs){ print(kable(round(lrt,digits))) }
+    m.num <- 1
+    if(is.na(mComp.baseline)){ bsl <- null.m  # selecting baseline model
+      } else { m.num <- grep(mComp.baseline,fix.eff) + 1
+         bsl <- models[[m.num - 1]] }
+    if(modelType!="CLMM"){ lrt <- as.data.frame(anova(bsl,models[[m.num]]))
+      if(length(models)>m.num){
+        for(i in m.num:(length(models)-1)){ lrt <- rbind(lrt,as.data.frame(anova(models[[i]],models[[i+1]]))[2,]) }}
+      } else { lrt <- as.data.frame(ordinal:::anova.clm(bsl,models[[m.num]])) # use anova.clm() to avoid env. issue
+        if(length(models)>m.num){
+          for(i in m.num:(length(models)-1)){ lrt <- rbind(lrt,as.data.frame(ordinal:::anova.clm(models[[i]],models[[i+1]]))[2,]) }}}
+    rownames(lrt) <- c(ifelse(is.na(mComp.baseline),"Null model","Baseline"),
+                       fix.eff[m.num:length(fix.eff)])
+    if(!is.na(p.adjust.method)){ # p-value corrections for multiple comparison
+      if(messages==TRUE){ cat(" (applying",p.adjust.method,"p-values correction)")}
+      lrt[!is.na(lrt$`Pr(>Chisq)`),"Pr(>Chisq)"] <- p.adjust(lrt[!is.na(lrt$`Pr(>Chisq)`),"Pr(>Chisq)"],
+                                                             method=p.adjust.method)  }
+    if(messages==TRUE){ # printing selected model
+      if(nrow(lrt[!is.na(lrt$`Pr(>Chisq)`) & lrt$`Pr(>Chisq)` < 0.05,])==0 ){ 
+        cat("\n   Selected model:",ifelse(is.na(mComp.baseline),"Null model","Baseline"))
+    } else { for(i in nrow(lrt):2){ if(lrt[i,ncol(lrt)] < .05){ if(messages==TRUE){ cat("\n   Selected model:",rownames(lrt)[i]) }
+                                       break }}}}
+    if("mComp"%in%outputs){ print(kable(round(lrt,digits))) } # printing LRT table
+    # Akaike weights
     AICs <- lrt[1:2,"AIC"] # Akaike weight
-    if(messages==TRUE){ cat("\n\n - Computing Aw coefficients for each model vs. all previous models:") 
-      cat("\n   - null model vs.",fix.eff[1],": =",round(Weights(AICs),digits)[1],
-          "\n   -",fix.eff[1],"vs. null model =",round(Weights(AICs),digits)[2]) }
-    if(length(models)>1){ for(i in 3:nrow(lrt)){ AICs <- c(AICs,lrt[i,"AIC"])
-      if(messages==TRUE){ cat("\n   -",row.names(lrt)[i],"=",round(Weights(AICs),digits)[length(AICs)]) }}}
-    if(messages==TRUE){ cat("\n   Selected model:",row.names(lrt[which(lrt$AIC==min(lrt$AIC)),])) }
+    if(messages==TRUE | ("mComp"%in%outputs & !("key.results"%in%outputs))){ 
+      cat("\n\n - Computing Aw coefficients for each model vs. all previous models:",
+          "\n   -",ifelse(is.na(mComp.baseline),"Null model","Baseline"),"vs.",fix.eff[m.num],": =",round(Weights(AICs),digits)[1],
+          "\n   -",fix.eff[m.num],"vs.",ifelse(is.na(mComp.baseline),"Null model","Baseline"),"model =",
+          round(Weights(AICs),digits)[2]) }
+    if(nrow(lrt)>2){ for(i in 3:nrow(lrt)){ AICs <- c(AICs,lrt[i,"AIC"])
+      if(messages==TRUE | ("mComp"%in%outputs & !("key.results"%in%outputs))){ 
+        cat("\n   -",row.names(lrt)[i],"=",round(Weights(AICs),digits)[length(AICs)]) }}}
+    if(messages==TRUE | ("mComp"%in%outputs & !("key.results"%in%outputs))){ 
+      cat("\n   Selected model based on Aw:",row.names(lrt[which(lrt$AIC==min(lrt$AIC)),])) }
     if("key.results"%in%outputs){ 
       key <- lrt[which(grepl(key.predictor,row.names(lrt))),] # key results
       if(nrow(key)>1){ key <- key[1,] }
-      key.results <- data.frame(sig.LRT=key[,ncol(key)]<0.05,higher.Aw=key$AIC==min(AICs[1:(which(fix.eff==key.predictor)+1)])) }} 
+      key.results <- data.frame(sig.LRT=key[,ncol(key)]<0.05, # sig.LRT
+                                higher.Aw=key$AIC==min(AICs[1:which(AICs==key$AIC)])) }} # higher.Aw
   
   # estimated parameters from key.model
   if("key.results"%in%outputs){
@@ -366,9 +389,9 @@ Visualizes the key results (Aw, LRT, and *t* value) obtained with the *glmerAn* 
 
 # 1. Sleep characterization
 
-Here, `s.archit`, `s.timing`, `s.variab`, and `s.auton` variables are predicted by (1) meaningful covariates (`SO.num`, `TotalSteps1000`, `weekday`, and `BMI`), (2) the `insomnia` group, (3) participants' `sex`, and (4) the interaction between `sex` and `insomnia` groups, in order to **characterize sleep between groups**.
+Here, `s.archit`, `s.timing`, `s.variab`, and `s.auton` variables are predicted by (1) a baseline model including meaningful covariates (`SO.num`, `TotalSteps1000`, `weekday`, `BMI`, and `age`), (2) the `insomnia` group, (3) participants' `sex`, and (4) the interaction between `sex` and `insomnia` groups, in order to **characterize sleep between groups**.
 ```{r fig.width=12,fig.height=8}
-predictors <- c("SO.num","TotalSteps1000","weekday.sleep","BMI","insomnia","sex","sex:insomnia")
+predictors <- c("SO.num","TotalSteps1000","weekday.sleep","BMI","age","insomnia","sex","sex:insomnia")
 ```
 
 <br>
@@ -385,14 +408,15 @@ s.archit <- c("TIB","TST","WASO","SE","light.p","deep.p","rem.p")
 `TIB` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- cbind(measure="TIB",glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=predictors,
-                                   modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                   modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                   gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                    outputs="key.results",key.predictor="insomnia",key.model="sex",messages=FALSE))
 ```
 
@@ -402,9 +426,9 @@ res <- cbind(measure="TIB",glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=predic
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the tails** of the residuals distribution) with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`***, ***`weekday.sleep`***, and ***`sex`*** are associated with a **significant LRT**, whereas only ***`SO.num`*** and ***`weekday.sleep`*** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT**, while model M3 including ***`sex`*** showed **stronger evidence** in terms of Aw compared to the baseline model
 
-- a large negative effect is estimated for ***`SO.num`*** (shorter `TST` for later than usual `SO`), whereas a large positive effect is estimated for ***`weekday`*** (longer `TST` during weekend), and a small but substantial effect is estimated for ***`sex`*** (longer `TST` for males than females). Neither `insomnia` nor `TotalSteps1000`, `BMI`, or the interaction between `insomnia` and `sex` show a substantial effect
+- a large negative effect is estimated for ***`SO.num`*** (shorter `TST` for later than usual `SO`), whereas a large positive effect is estimated for ***`weekday`*** (longer `TST` during weekend), and a small difference is estimated between ***`sexes`*** (longer `TST` for males than females) across models M2-M4. Neither `insomnia` nor `TotalSteps1000`, `age`, `BMI`, or the interaction between `insomnia` and `sex` show a substantial effect
 
 <br>
 
@@ -413,15 +437,16 @@ res <- cbind(measure="TIB",glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=predic
 `TST` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="TST",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="TST",glmerAn(long=ema,wide=demos,resp="TST",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="sex",messages=FALSE)))
 ```
 
@@ -431,11 +456,11 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the tails** of the residuals distribution) with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`***, ***`weekday.sleep`***, and ***`sex`*** are associated with a **significant LRT**, whereas the inclusion of ***`SO.num`***, ***`TotalSteps1000`***, ***`weekday.sleep`***, and ***`sex`*** are associated with a **stronger evidence** in terms of Aw
+- only model 3 including ***`sex`*** is associated with a **significant LRT** and a **stronger evidence** in terms of Aw compared to the baseline model
 
-- a large negative effect is estimated for ***`SO.num`*** (shorter `TST` for later than usual `SO`), whereas a large positive effect is estimated for ***`weekday`*** (longer `TST` during weekend), and a small but substantial effect is estimated for ***`sex`**` (longer `TST` for males than females). Neither `insomnia` nor `TotalSteps1000`, `BMI` or the interaction between `insomnia` and `sex` show a substantial effect
+- a large negative effect is estimated for ***`SO.num`*** (shorter `TST` for later than usual `SO`), whereas a large positive effect is estimated for ***`weekday`*** (longer `TST` during weekend), and a small but substantial effect is estimated for ***`sex`**` (longer `TST` for males than females). Neither `insomnia` nor `TotalSteps1000`, `age`, `BMI`, or the interaction between `insomnia` and `sex` show a substantial effect
 
-- overall, `TST` shows the same pattern of results than `TIB`
+- overall, `TST` shows a similar pattern of results than `TIB`
 
 <br>
 
@@ -444,15 +469,16 @@ res <- rbind(res,
 `WASO` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="WASO",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="WASO",glmerAn(long=ema,wide=demos,resp="WASO",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="sex",messages=FALSE)))
 ```
 
@@ -462,9 +488,9 @@ res <- rbind(res,
 
 - whereas (1) **random effects** are quite **normally distributed**, a (2) **marked deviation** from normality can be seen in the **upper tail of the residuals distribution**. Thus, we conduct the main analyses by relying on normality, whereas the **gamma will be checked in the [robustness check](#robcheck)**. The residuals show (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`*** and ***`weekday.sleep`*** are associated with a **significant LRT** and a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
-- a large negative effect is estimated for ***`SO.num`*** (shorter `WASO` for later than usual `SO`), whereas a large positive effect is estimated for **`weekday`*** (longer `WASO` during weekend). None of the remaining predictors, including `insomnia` and its interaction with `sex`, show a substantial effect
+- a large negative effect is estimated for ***`SO.num`*** (shorter `WASO` for later than usual `SO`), whereas a large positive effect is estimated for **`weekday`*** (longer `WASO` during weekend), and a small positive effect is estimated for **`age`** (longer `WASO` for older adolescents). None of the remaining predictors, including `insomnia` and its interaction with `sex`, show a substantial effect
 
 <br>
 
@@ -473,16 +499,17 @@ res <- rbind(res,
 `SE` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="SE",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("SO.num.mc","insomnia","sex","sex:insomnia"), # showing selected model + models including insomnia
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # showing selected model + models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="SE",glmerAn(long=ema,wide=demos,resp="SE",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
-                                         outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
+                                        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                        gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
+                                        outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
 <br>
@@ -491,9 +518,9 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite normally distributed, although a **marked deviation from normality** can be seen in the **lower tail** of the residuals distribution (i.e., SE is bounded at 100), with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`*** is associated with a significant LRT, whereas both ***`SO.num`*** and ***`TotalSteps1000`*** are associated with **stronger evidence** in terms of higher Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
-- a substantial positive effect is only estimated for ***`SO.num`*** (higher `SE` for later than usual `SO`), whereas none of the remaining predictors shows a substantial effect
+- a substantial positive effect is only estimated for ***`SO.num`*** (higher `SE` for later than usual `SO`), whereas a negative relationship is estimated between `SE` and `age` (lower `SE` for older adolescents), whereas none of the remaining predictors shows a substantial effect
 
 <br>
 
@@ -502,15 +529,16 @@ res <- rbind(res,
 `light.p` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="light.p",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("BMI.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","BMI.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="light.p",glmerAn(long=ema,wide=demos,resp="light.p",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -520,7 +548,7 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the tails** of the residuals distribution) with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`BMI`*** is associated with a **significant LRT**, whereas both ***`TotalSteps1000`*** and ***`BMI`*** are associated with **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT**, whereas model M2 including ***`insomnia`*** showed **stronger evidence** in terms of Aw compared to the baseline model
 
 - a substantial negative effect is estimated only for ***`BMI`*** (lower `light.p` for participants with higher `BMI`), whereas none of the remaining predictors shows a substantial effect 
 
@@ -531,15 +559,16 @@ res <- rbind(res,
 `deep.p` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="deep.p",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("SO.num.mc","insomnia","sex","sex:insomnia"), # selected model + models including insomnia
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # selected model + models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="deep.p",glmerAn(long=ema,wide=demos,resp="deep.p",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -549,7 +578,7 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the tails** of the residuals distribution) with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`*** is associated with a **significant LRT**, whereas both ***`SO.num`*** and ***`weekday.sleep`*** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - a substantial positive effect is only estimated for ***`SO.num`*** (higher `deep.p` for later than usual SO), whereas none of the remaining predictors shows a substantial effect
 
@@ -560,15 +589,16 @@ res <- rbind(res,
 `rem.p` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="rem.p",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
         coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="rem.p",glmerAn(long=ema,wide=demos,resp="rem.p",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                         mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -578,9 +608,11 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the tails** of the residuals distribution) with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`*** is associated with a **significant LRT**, whereas ***`SO.num`***, ***`TotalSteps1000`***, ***`weekday.sleep`***, and ***`BMI`*** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - a substantial negative effect is only estimated for ***`SO.num`*** (higher `rem.p` for earlier than usual `SO`), whereas none of the remaining predictors shows a substantial effect
+
+- overall, `rem.p` shows a similar pattern of results than `deep.p`
 
 <br>
 
@@ -596,15 +628,16 @@ s.timing <- c("SO.num","WakeUp.num")
 `SO.num` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals. Obviously, `SO.num` is not included as a covariate in model M1.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="SO.num",fix.eff=predictors[2:length(predictors)],
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="SO.num",glmerAn(long=ema,wide=demos,resp="SO.num",fix.eff=predictors[2:length(predictors)],
-                                         modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors=c("BMI","age"),
+                                         mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="sex",messages=FALSE)))
 ```
 
@@ -614,7 +647,7 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed**, despite some **marked deviations in the tails** of the residuals distribution, with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`weekday.sleep`***, ***`BMI`*** and ***`sex`*** are associated with a **significant LRT**, whereas ***`TotalSteps1000`***, ***`weekday.sleep`***, ***`BMI`*** and ***`sex`*** show higher Aw than the previous models
+- only model M3 including ***`sex`*** showed a **significant LRT**, and higher Aw than the baseline model
 
 - a relatively large effect is estimated for ***`weekday`*** (later `SO` during weekend), whereas small but substantial effects are estimated for ***`TotalSteps1000`*** (earlier `SO` in days with more steps than usual), ***`BMI`*** (earlier `SO` for participants with higher `BMI`), and ***`sex`*** (later `SO` for boys than for girls). Neither `insomnia` nor its interaction with `sex` show a substantial effect.
 
@@ -625,15 +658,16 @@ res <- rbind(res,
 `WakeUp.num` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="WakeUp.num",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="WakeUp.num",glmerAn(long=ema,wide=demos,resp="WakeUp.num",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -643,7 +677,7 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed**, despite some **marked deviations in the tails** of the residuals distribution, with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values
 
-- only ***`SO.num`***, ***`weekday.sleep`***, and ***`BMI`*** are associated with a **significant LRT**, whereas ***`TotalSteps1000`***, ***`SO.num`***, ***`weekday.sleep`***, and ***`BMI`*** show **higher Aw** than the previous models
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - a large positive effect is estimated for ***`SO.num`*** (later `WakeUp` time for later than usual `SO`) and ***`weekday`*** (later `WakeUp` time during weekend), whereas a small but substantial effect is estimated for ***`BMI`*** (earlier `WakeUp` time for participants with higher `BMI`). Neither `insomnia` nor its interaction with `sex` show a substantial effect.
 
@@ -665,22 +699,23 @@ ema$TIB.SSDc <- ema$TIB.SSD + 0.001
 
 # running analysis
 glmerAn(long=ema,wide=demos,resp="TIB.SSDc",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
         family="gamma",link="log", # Gamma family with log link function
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"),transform="exp", # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"),transform="exp", # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # plotting effects without observed data (zoom in)
 glmerAn(long=ema,wide=demos,resp="TIB.SSDc",fix.eff=predictors,
-        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",family="gamma",link="log",
+        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",family="gamma",link="log",
         outputs="plotEff",plot.model="insomnia",dot.size=2)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="TIB.SSDc",glmerAn(long=ema,wide=demos,resp="TIB.SSDc",fix.eff=predictors,
                                          modelType=c("GLMER"),family="gamma",link="log",transform="exp",
-                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         mComp.baseline="age",p.adjust.method="BH",
+                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -690,7 +725,7 @@ res <- rbind(res,
 
 - both (1) **deviance residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the lower tails** of the residuals distribution) with (3) **no substantial linear relationship** between residuals and fitted values; although categorical factors do not show substantially different dispersion, (4) the **SD is slightly proportional to the mean** (as assumed by the gamma distribution); there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`weekday.sleep`***, ***`BMI`***, and ***`insomnia`*** are associated with a **significant LRT**, whereas the inclusion of ***`SO.num`***, ***`weekday.sleep`***, ***`BMI`***, and ***`insomnia`*** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT**, whereas the inclusion of ***`insomnia`*** is associated with a **stronger evidence** in terms of Aw
 
 - substantial effects are estimated for ***`weekday.sleep`*** (higher `TIB.SSD` during weekend), ***`BMI`*** (higher `TIB.SSD` in participants with higher `BMI`), and ***`insomnia`*** (lower `TST.SSD` in the `insomnia` compared to the control group. Neither `sex` nor its interaction with `insomnia` show a substantial effect
 
@@ -705,22 +740,23 @@ ema$TST.SSDc <- ema$TST.SSD + 0.001
 
 # running analysis
 glmerAn(long=ema,wide=demos,resp="TST.SSDc",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
         family="gamma",link="log", # Gamma family with log link function
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"),transform="exp", # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"),transform="exp", # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # plotting effects without observed data (zoom in)
 glmerAn(long=ema,wide=demos,resp="TST.SSDc",fix.eff=predictors,
-        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",family="gamma",link="log",
+        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",family="gamma",link="log",
         outputs="plotEff",plot.model="insomnia",dot.size=2,messages=FALSE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="TST.SSDc",glmerAn(long=ema,wide=demos,resp="TST.SSDc",fix.eff=predictors,
                                          modelType=c("GLMER"),family="gamma",link="log",transform="exp",
-                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                         mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -730,7 +766,7 @@ res <- rbind(res,
 
 - both (1) **deviance residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the lower tail** of the residuals distribution) with (2) **no substantial linear relationship** between residuals and fitted values; although categorical factors do not show substantially different dispersion, (4) the **SD are proportional to the means** (as assumed by the gamma distribution); there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`weekday.sleep`***, ***`BMI`***, and ***`insomnia`*** are associated with a **significant LRT**, whereas the inclusion of ***`SO.num`***, ***`weekday.sleep`***, ***`BMI`***, and ***`insomnia`*** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT**, whereas the inclusion of ***`insomnia`*** is associated with a **stronger evidence** in terms of Aw
 
 - substantial effects are estimated for ***`weekday.sleep`*** (higher `TST.SSD` during weekend), ***`BMI`*** (higher `TST.SSD` in participants with higher `BMI`), and ***`insomnia`*** (lower `TST.SSD` in the `insomnia` compared to the control group. Neither `sex` nor its interaction with `insomnia` show a substantial effect
 
@@ -747,22 +783,23 @@ ema$WASO.SSDc <- ema$WASO.SSD + 0.001
 
 # running analysis
 glmerAn(long=ema,wide=demos,resp="WASO.SSDc",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
         family="gamma",link="log",nAGQ=0, # Gamma family with log link function, nAGQ = 0 to reach convergence
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("weekday.sleep","insomnia","sex"),transform="exp", # selected model + models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex"),transform="exp", # selected model + models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # plotting effects without observed data (zoom in)
 glmerAn(long=ema,wide=demos,resp="WASO.SSDc",fix.eff=predictors,
-        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",family="gamma",link="log",nAGQ=0,
+        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",family="gamma",link="log",nAGQ=0,
         outputs="plotEff",plot.model="insomnia",dot.size=2,messages=FALSE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="WASO.SSDc",glmerAn(long=ema,wide=demos,resp="WASO.SSDc",fix.eff=predictors,
                                          modelType=c("GLMER"),family="gamma",link="log",transform="exp",nAGQ=0,
-                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                         mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -772,7 +809,7 @@ res <- rbind(res,
 
 - both (1) **deviance residuals** and (2) **random effects** are quite **normally distributed** (despite some **small deviations in the lower tail** and some **marked deviations in the upper tail** of the residuals distribution) with (3) **no substantial linear relationship** between residuals and fitted values; although categorical factors do not show substantially different dispersion, the (4) **SD are slightly proportional to the means** (as assumed by the gamma distribution); there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`SO.num`*** and ***`weekday.sleep`*** are associated with a **significant LRT** and show **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - substantial effects are only estimated for ***`SO.num`*** (higher variability for earlier than usual `SO`) and ***`weekday.sleep`*** (higher `WASO.SSD` during weekend). Neither `insomnia` nor its interaction with `sex` show a substantial effect
 
@@ -780,30 +817,32 @@ res <- rbind(res,
 
 ### SO.num.SSD
 
-All `s.variab` variables are **positively skewed and bounded at zero**, thus they are initially modeled by assuming a **gamma distribution** with a **log link function**. A constant is added to all `SO.num.SSD` values to adhere with the gamma assumption of positive-only values (i.e., 10 cases have `SO.num.SSD` = 0). Note that `SO.num` is not included as a covariate predicting `SO.num.SSD`
+All `s.variab` variables are **positively skewed and bounded at zero**, thus they are initially modeled by assuming a **gamma distribution** with a **log link function**. A constant is added to all `SO.num.SSD` values to adhere with the gamma assumption of positive-only values (i.e., 10 cases have `SO.num.SSD` = 0). Note that `SO.num` is not included as a covariate predicting its own variability, and that `age` is not included due to **convergence problems**.
 ```{r fig.width=12,fig.height=8}
 # adding constant to each value
 ema$SO.num.SSDc <- ema$SO.num.SSD + 0.001 
 
 # running analysis
-glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",fix.eff=predictors[2:length(predictors)],
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors="BMI", # GLMER with mean-centered pred.
+glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",fix.eff=c("TotalSteps1000","weekday.sleep","BMI","insomnia","sex","sex:insomnia"),
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000",gmc.predictors="BMI", 
         family="gamma",link="log", # Gamma family with log link function
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"),transform="exp", # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="BMI",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex","sex:insomnia"),transform="exp", # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # plotting effects without observed data (zoom in)
-glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",fix.eff=predictors[2:length(predictors)],
-        mc.predictors="TotalSteps1000",gmc.predictors="BMI",modelType="GLMER",family="gamma",link="log",
+glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",fix.eff=c("TotalSteps1000","weekday.sleep","BMI","insomnia","sex","sex:insomnia"),
+        mc.predictors="TotalSteps1000",gmc.predictors=c("BMI"),modelType="GLMER",family="gamma",link="log",
         outputs="plotEff",plot.model="insomnia",dot.size=2,messages=FALSE,show.data=FALSE)
 
 # keeping key results
 res <- rbind(res,
-             cbind(measure="SO.num.SSDc",glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",fix.eff=predictors[2:length(predictors)],
-                                         modelType=c("GLMER"),family="gamma",link="log",transform="exp",
-                                         mc.predictors="TotalSteps1000",gmc.predictors="BMI",
-                                         outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
+             cbind(measure="SO.num.SSDc",glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",
+                                                 fix.eff=c("TotalSteps1000","weekday.sleep","BMI","insomnia","sex","sex:insomnia"),
+                                                 modelType=c("GLMER"),family="gamma",link="log",transform="exp",
+                                                 mc.predictors="TotalSteps1000",gmc.predictors=c("BMI"),
+                                                 mComp.baseline="BMI",p.adjust.method="BH",
+                                                 outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
 <br>
@@ -812,7 +851,7 @@ res <- rbind(res,
 
 - both (1) **deviance residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the tails** of the residuals distribution, and in the upper tail of the random effects) with (3) **no substantial linear relationship** between residuals and fitted values; although categorical factors do not show substantially different dispersion, the (4) **SD are slightly proportional to the means** (as assumed by the gamma distribution); there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`weekday.sleep`*** and ***`insomnia`*** are associated with a **significant LRT**, whereas the inclusion of ***`weekday.sleep`***, ***`BMI`***, and ***`insomnia`*** are associated with a **stronger evidence** in terms of Aw
+- only model M2 including ***`insomnia`*** is associated with a **significant LRT** and **stronger evidence** in terms of Aw compared to the baseline model
 
 - substantial effects are estimated for ***`weekday.sleep`*** (higher `SO.num.SSD` during weekend) and ***`insomnia`*** (lower `SO.num.SSD` in the `insomnia` compared to the control group. Neither `sex` nor its interaction with `insomnia` show a substantial effect
 
@@ -827,22 +866,23 @@ ema$WakeUp.num.SSDc <- ema$WakeUp.num.SSD + 0.001
 
 # running analysis
 glmerAn(long=ema,wide=demos,resp="WakeUp.num.SSDc",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
         family="gamma",link="log",nAGQ=0, # Gamma family with log link function, nAGQ=0 to reach convergence
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("BMI.gmc","insomnia","sex"),transform="exp", # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
+        coeff.models=c("age.gmc","insomnia","sex"),transform="exp", # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # plotting effects without observed data (zoom in)
 glmerAn(long=ema,wide=demos,resp="WakeUp.num.SSDc",fix.eff=predictors,
-        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",family="gamma",link="log",nAGQ=0,
+        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",family="gamma",link="log",nAGQ=0,
         outputs="plotEff",plot.model="insomnia",dot.size=2,messages=FALSE,show.data=FALSE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="WakeUp.num.SSDc",glmerAn(long=ema,wide=demos,resp="WakeUp.num.SSDc",fix.eff=predictors,
                                          modelType=c("GLMER"),family="gamma",link="log",transform="exp",nAGQ=0,
-                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                         mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -852,7 +892,7 @@ res <- rbind(res,
 
 - both (1) **deviance residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the lower tails** of the residuals distribution) with (3) **no substantial linear relationship** between residuals and fitted values; although categorical factors do not show substantially different dispersion, the (4) **SD are proportional to the means** (as assumed by the gamma distribution); there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`weekday.sleep`*** and ***`BMI`*** are associated with a **significant LRT**, whereas the inclusion of ***`weekday.sleep`***, ***`BMI`***, and ***`sex`*** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - a substantial effect is only estimated for ***`weekday.sleep`*** (higher `WakeUp.num.SSD` during weekend) whereas neither `insomnia` nor its interaction with `sex` show a substantial effect
 
@@ -870,15 +910,16 @@ s.auton <- c("HR_NREM","HR_REM")
 `HR_NREM` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="HR_NREM",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
         coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="HR_NREM",glmerAn(long=ema,wide=demos,resp="HR_NREM",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="sex",messages=FALSE)))
 ```
 
@@ -888,7 +929,7 @@ res <- rbind(res,
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed**, despite a positive **deviation in the upper tail** of the residuals distribution, with (3) **homogeneity** between the variances across *sex* and *insomnia* levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- **all predictors but** ***`SO.num`*** **and** ***`insomnia`*** are associated with a **significant LRT**, whereas the inclusion of **all variables but** ***`SO.num`*** are associated with a **stronger evidence** in terms of Aw
+- only M3 including ***`sex`*** shows a **significant LRT**, whereas **stronger evidence** in terms of Aw is shown by both model M3 and model M4 including the ***interaction between `sex` and `insomnia`***, compared to the baseline model
 
 - substantial effects are estimated for ***`TotalSleep1000`*** (higher `stageHR_NREM` for higher than usual `TotalSleep1000`), ***`weekday.sleep`*** (higher `stageHR_NREM` during weekends), ***`BMI`*** (higher `stageHR_NREM` for participants with higher `BMI`), ***`sex`*** (higher `stageHR_NREM` in girls compared to boys), and its **interaction with** ***`insomnia`*** (lower `stageHR_NREM` in insomnia girls compared to control girls)
 
@@ -899,15 +940,16 @@ res <- rbind(res,
 `HR_REM` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="HR_REM",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
+        modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"), 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="age",p.adjust.method="BH",
         coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,
              cbind(measure="HR_REM",glmerAn(long=ema,wide=demos,resp="HR_REM",fix.eff=predictors,
-                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                         modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                                         gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
                                          outputs="key.results",key.predictor="insomnia",key.model="sex",messages=FALSE)))
 ```
 
@@ -915,7 +957,11 @@ res <- rbind(res,
 
 *Comments:*
 
-- results are **highly consistent** with those reported for `HR_NREM`, with the only differences that `HR_REM` is also positively predicted by ***`SO.num`***, and not substantially associated with `BMI` or `weekday.sleep`
+- both (1) **residuals** and (2) **random effects** are quite **normally distributed**, despite a positive **deviation in the upper tail** of the residuals distribution, with (3) **homogeneity** between the variances across *sex* and *insomnia* levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
+
+- only M3 including ***`sex`*** shows a **significant LRT**, whereas **stronger evidence** in terms of Aw is shown by both model M3 and model M4 including the ***interaction between `sex` and `insomnia`***, compared to the baseline model
+
+- substantial effects are estimated for ***`SO.num`*** (higher `stageHR_REM` for later `SO` than usual), ***`sex`*** (higher `stageHR_REM` in girls compared to boys), and its **interaction with** ***`insomnia`*** (lower `stageHR_REM` in insomnia girls compared to control girls)
 
 <br>
 
@@ -940,11 +986,11 @@ key.resPlot(res)
 
 *Comments:*
 
-- the analysis of sleep characterization highlighted substantial differences between the insomnia and the control group for `TIB.SSD`, `TST.SSD`, and `SO.num.SSD` (with lower night-to-night variability for the insomnia than the control group)
+- the analysis of sleep characterization highlighted substantial differences between the insomnia and the control group for `TIB.SSD`, `TST.SSD` (only supported by t-values and Aw, but not by the LRT), and `SO.num.SSD` (with lower night-to-night variability for the insomnia than the control group)
 
-- **substantial but less evident** (i.e., LRT > 0.05) differences are highlighted for `HR_NREM` and `HR_REM`, with the **interactive model** predicting **lower HR in female insomnia** than in female control, but no differences between boys
+- with `HR_NREM` and `HR_REM`, the **interactive model** was selected and predicted **lower HR in female insomnia** than in female control, but no differences between boys, with **no main effect of `insomnia`**
 
-- **none of the remaining sleep outcomes** show significant LRT, higher Aw, and substantial relationships for the *insomnia* predictor
+- **none of the remaining sleep outcomes** showed significant LRT, higher Aw, and substantial relationships for the *insomnia* predictor
 
 <br>
 
@@ -981,7 +1027,8 @@ The figure below shows the t-values associated with the group differences betwee
 ```{r,fig.width=12,fig.height=3}
 # computing key results for TIB
 res2 <- cbind(measure="TIB",glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
-                                    modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                    modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                    mComp.baseline="age",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group",messages=FALSE))
 
 # computing key results for the following sleep outcomes
@@ -994,7 +1041,8 @@ for(sleepVar in sleepVars){ if(grepl("SSD",sleepVar)){ fam <- c("gamma","log") }
   res2 <- rbind(res2,
              cbind(measure=sleepVar,glmerAn(long=ema,wide=demos,resp=sleepVar,fix.eff=Predictors,nAGQ=nAGQ,
                                             family=fam[1],link=fam[2],key.model=key.model,key.predictor="insomnia.group",
-                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                            mComp.baseline="age",p.adjust.method="BH",
                                             outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res$robCheck <- "Original"
@@ -1012,6 +1060,28 @@ key.resPlot(RES,robCheck = "robCheck")
 - results are **highly consistent** with the main analyses for most sleep outcomes
 
 - the only differences are highlighted for `TST.SSD`, showing a no longer significant LRT (but still higher Aw and substantial t), and `HR_NREM` and `HR_REM`, showing a no longer higher Aw (but still substantial t)
+
+<br>
+
+Here, we can see that the **differences in** `TIB.SSD`, `TST.SSD`, and `SO.num.SSD` **are substantial**, and **driven by the full DSM insomnia subgroup**, whereas no substantial differences are estimated between the control and the sub-threshold insomnia group.
+```{r fig.width=10,fig.height=6,warning=FALSE,message=FALSE}
+plot_grid(list(glmerAn(long=ema,wide=demos,resp="TIB.SSDc",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
+                       family="gamma",link="log",modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                       gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
+                       outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",
+                       plot.model="insomnia.group",plot.pred="insomnia.group",message=FALSE,return.plot=TRUE),
+               glmerAn(long=ema,wide=demos,resp="TST.SSDc",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
+                       family="gamma",link="log",modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                       gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
+                       outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",
+                       plot.model="insomnia.group",plot.pred="insomnia.group",message=FALSE,return.plot=TRUE),
+               glmerAn(long=ema,wide=demos,resp="SO.num.SSDc",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
+                       family="gamma",link="log",modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),
+                       gmc.predictors=c("BMI","age"),mComp.baseline="age",p.adjust.method="BH",
+                       outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",
+                       plot.model="insomnia.group",plot.pred="insomnia.group",message=FALSE,return.plot=TRUE)),
+          tags=TRUE,margin=rep(0,4))
+```
 
 <br>
 
@@ -1033,7 +1103,8 @@ The figure below shows the t-values associated with the group differences betwee
 ```{r,fig.width=12,fig.height=3}
 # computing key results for TIB
 res2 <- cbind(measure="TIB",glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=c("covid19",PREdictors),
-                                    modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                    modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                    mComp.baseline="age",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following sleep outcomes
@@ -1046,7 +1117,8 @@ for(sleepVar in sleepVars){ if(grepl("SSD",sleepVar)){ fam <- c("gamma","log") }
   res2 <- rbind(res2,
              cbind(measure=sleepVar,glmerAn(long=ema,wide=demos,resp=sleepVar,fix.eff=Predictors,nAGQ=nAGQ,
                                             family=fam[1],link=fam[2],key.model=key.model,key.predictor="insomnia",
-                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                            mComp.baseline="age",p.adjust.method="BH",
+                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
                                             outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "covid19"
@@ -1076,7 +1148,7 @@ for(sleepVar in c("TIB",sleepVars)){
   if(grepl("HR",sleepVar)){ key.model="sex" }else{ key.model <- "insomnia" }
   if(sleepVar%in%c("WASO.SSDc","WakeUp.num.SSDc","SO.num.SSDc")){ nAGQ <- 0 }else{ nAGQ <- 1 } # nAGQ = 0 to converge
   glmerAn(long=ema,wide=demos,resp=sleepVar,fix.eff=Predictors,
-        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",family=fam[1],link=fam[2],nAGQ=nAGQ,
+        mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",family=fam[1],link=fam[2],nAGQ=nAGQ,
         outputs="plotEff",plot.model="insomnia",plot.pred="covid19",messages=FALSE,dot.size=3,dodge=0.5) }
 ```
 
@@ -1109,7 +1181,8 @@ cat("Excluded",nrow(ema)-nrow(EMA),"days from",nrow(demos)-nrow(DEMOS),"particip
 
 # computing key results for TIB
 res2 <- cbind(measure="TIB",glmerAn(long=EMA,wide=DEMOS,resp="TIB",fix.eff=PREdictors,
-                                    modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                    modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                    mComp.baseline="age",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the other sleep outcomes
@@ -1122,7 +1195,8 @@ for(sleepVar in sleepVars){
   res2 <- rbind(res2,
              cbind(measure=sleepVar,glmerAn(long=EMA,wide=DEMOS,resp=sleepVar,fix.eff=Predictors,nAGQ=nAGQ,
                                             family=fam[1],link=fam[2],key.model=key.model,key.predictor="insomnia",
-                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                            mComp.baseline="age",p.adjust.method="BH",
+                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
                                             outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "majMiss"
@@ -1160,7 +1234,8 @@ The figure below shows the t-values associated with the group differences betwee
 ```{r,fig.width=12,fig.height=3}
 # computing key results for TIB
 res2 <- cbind(measure="TIB",glmerAn(long=ema,wide=demos,resp="TIB",fix.eff=PREdictors[PREdictors!="TotalSteps1000"],
-                                    modelType=c("GLMER"),mc.predictors="SO.num",gmc.predictors="BMI",
+                                    modelType=c("GLMER"),mc.predictors="SO.num",gmc.predictors=c("BMI","age"),
+                                    mComp.baseline="age",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following sleep outcomes
@@ -1174,7 +1249,8 @@ for(sleepVar in sleepVars){
   res2 <- rbind(res2,
              cbind(measure=sleepVar,glmerAn(long=ema,wide=demos,resp=sleepVar,fix.eff=Predictors,nAGQ=nAGQ,
                                             family=fam[1],link=fam[2],key.model=key.model,key.predictor="insomnia",
-                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                            mComp.baseline="age",p.adjust.method="BH",
+                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
                                             outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "no-TotalSteps"
@@ -1200,46 +1276,46 @@ Here, we can see that the differences in *HR_NREM* and *HR_REM* are **no longer 
 ```{r fig.width=10,fig.height=6,warning=FALSE,message=FALSE,echo=FALSE}
               # plotting HR_NREM (without covid19)
 plot_grid(list(glmerAn(long=ema,wide=demos,resp="HR_NREM",fix.eff=c(PREdictors,"sex"),
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex",plot.pred="insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("with TotalSteps1000"),
                # plotting HR_NREM (with covid19)
                glmerAn(long=ema,wide=demos,resp="HR_NREM",fix.eff=c(PREdictors[which(PREdictors!="TotalSteps1000")],"sex"),
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex",plot.pred="insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("without TotalSteps1000"),
                
                # plotting HR_REM (without covid19)
                glmerAn(long=ema,wide=demos,resp="HR_REM",fix.eff=c(PREdictors,"sex"),
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex",plot.pred="insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("with TotalSteps1000"),
                # plotting HR_REM (with covid19)
                glmerAn(long=ema,wide=demos,resp="HR_REM",fix.eff=c(PREdictors[which(PREdictors!="TotalSteps1000")],"sex"),
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex",plot.pred="insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("without TotalSteps1000")),
           tags=TRUE,margin=rep(0,4))
 
               # plotting HR_NREM interaction (without covid19)
 plot_grid(list(glmerAn(long=ema,wide=demos,resp="HR_NREM",fix.eff=predictors,
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex:insomnia",plot.pred="sex:insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("with TotalSteps1000"),
                # plotting HR_NREM interaction (with covid19)
                glmerAn(long=ema,wide=demos,resp="HR_NREM",fix.eff=predictors[which(predictors!="TotalSteps1000")],
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex:insomnia",plot.pred="sex:insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("without TotalSteps1000"),
                
                # plotting HR_REM interaction (without covid19)
                glmerAn(long=ema,wide=demos,resp="HR_REM",fix.eff=predictors,
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex:insomnia",plot.pred="sex:insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("with TotalSteps1000"),
                # plotting HR_REM interaction (with covid19)
                glmerAn(long=ema,wide=demos,resp="HR_REM",fix.eff=predictors[which(predictors!="TotalSteps1000")],
-                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",modelType="GLMER",
+                       mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",
                        outputs="plotEff",plot.model="sex:insomnia",plot.pred="sex:insomnia",messages=FALSE,dot.size=3,
                        return.plot=TRUE) + ggtitle("without TotalSteps1000")),
           tags=TRUE,margin=rep(0,4))
@@ -1317,8 +1393,8 @@ The figure below shows the t-values associated with the group differences betwee
 # computing key results for WASO
 ema$WASOc <- ema$WASO + 0.001
 res2 <- cbind(measure="WASO",glmerAn(long=ema,wide=demos,resp="WASOc",fix.eff=PREdictors,nAGQ=0, # nAGQ = 0 to reach convergence
-                                    modelType=c("GLMER"),family="gamma",link="log",
-                                    mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                    modelType=c("GLMER"),family="gamma",link="log",mComp.baseline="age",p.adjust.method="BH",
+                                    mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following sleep outcomes
@@ -1331,7 +1407,8 @@ for(sleepVar in c(paste(s.variab,"c",sep=""),s.auton)){
   res2 <- rbind(res2,
              cbind(measure=sleepVar,glmerAn(long=ema,wide=demos,resp=sleepVar,fix.eff=Predictors,nAGQ=nAGQ,
                                             family=fam[1],link=fam[2],key.model=key.model,key.predictor="insomnia",
-                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors="BMI",
+                                            modelType=c("GLMER"),mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),
+                                            mComp.baseline="age",p.adjust.method="BH",
                                             outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "familyDistr"
@@ -1372,13 +1449,11 @@ key.resPlot(RES,robCheck = "robCheck")
 
 *Comments:*
 
-- the **null results** observed from the main analyses (`sarchit` and `s.timing`) are **highly consistent** across the robustness checks
+- the **null results** observed from the main analyses (`sarchit`, `s.timing`, and `s.auton`) are **highly consistent** across the robustness checks
 
 - the lower `s.variab` in `TIB`, `TST`, and `SO` highlighted for the `insomnia` group shows **some inconsistencies**, especially for `SO.num.SSD` (whose effect is no longer substantial following the exclusion of `majMiss` participants, or the inclusion of `covid19`)
 
 - **more consistent** results are found for `TST.SSD` (only affected by the distribution family, but with a better fit for the main analyses than the robustness checks) and `TIB.SSD` (whose group differences are no longer substantial when `TotalSteps` are excluded from the model, likely due to the lack of convergence with nAGQ = 1)
-
-- results for `s.auton` variables are **apparently even more inconsistent** than those shown by `s.variab`, with the main effect of `insomnia` showing low generalizability across different analytical strategies, and especially for `HR_NREM`; however, it should be noted that the **interaction between** `sex` **and** `insomnia` is **consistently** observed over all robustness checks   
 
 <br>
 
@@ -1428,15 +1503,16 @@ Here, we use the *glmerAn* function to conduct logistic regression for each item
 `stress` is a one-item ordinal variable, and it was dicotomized to be modeled by assuming a **binomial distribution** for the residuals (i.e., **logistic regression**).
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="stress.cat",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000", 
         family="binomial",link="logit",transform="exp", # logistic regression (exponentiated coefficients = odds ratios)
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="weekday.sleep",p.adjust.method="BH",
+        coeff.models=c("weekday.sleep","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia")
 
 # keeping key results
 res <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat",fix.eff=predictors,
                                    modelType=c("GLMER"),mc.predictors="TotalSteps1000",family="binomial",link="logit",
+                                   mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                    outputs="key.results",key.predictor="insomnia",key.model="insomnia",dot.size=3,messages=FALSE))
 ```
 
@@ -1446,7 +1522,7 @@ res <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat",
 
 - the logistic regression assumption of (1) **linearity between logit and continuous predictors** generally holds, although the slightly higher logit for weekend days, insomnia, and females; (2) random effects are **quite normally distributed**, with only a **slight deviation from normality in the lower tail** of the random intercept distribution; there is (3) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`TotalSteps1000`*** and ***`weekday.sleep`*** are associated with a **significant LRT**, whereas the inclusion of **all variables but the interactive term** are associated with a **stronger evidence** in terms of Aw
+- **none of the specified models** show a **significant LRT**, while model M2 and M3 including ***`insomnia`*** and ***`sex`*** show **stronger evidence** in terms of Aw compared to the baseline model
 
 - substantial effects are only estimated for ***`TotalSteps1000`*** (lower `stress` for higher than usual `TotalSteps`), and ***`weekday.sleep`*** (lower `stress` on weekend days than on weekdays). Neither `insomnia` nor `sex` or their interaction show a substantial effect (i.e., despite the slightly higher `stress` in insomnia than in controls, and especially in insomnia girls compared to control girls, these differences are not substantial)
 
@@ -1457,16 +1533,17 @@ res <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat",
 `worry` is a one-item ordinal variable, and it was dicotomized to be modeled by assuming a **binomial distribution** for the residuals (i.e., **logistic regression**).
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="worry.cat",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000", 
         family="binomial",link="logit",transform="exp", # logistic regression (exponentiated coefficients = odds ratios)
         nAGQ=0, # nAGQ = 0 to reach convergence in the interactive model
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="weekday.sleep",p.adjust.method="BH",
+        coeff.models=c("weekday.sleep","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia")
 
 # keeping key results
 res <- rbind(res,cbind(measure="worry.cat",glmerAn(long=ema,wide=demos,resp="worry.cat",fix.eff=predictors[1:(length(predictors)-1)],
                                    modelType=c("GLMER"),mc.predictors="TotalSteps1000",family="binomial",link="logit",
+                                   mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                    outputs="key.results",key.predictor="insomnia",key.model="insomnia",dot.size=3,messages=FALSE)))
 ```
 
@@ -1476,7 +1553,7 @@ res <- rbind(res,cbind(measure="worry.cat",glmerAn(long=ema,wide=demos,resp="wor
 
 - the logistic regression assumption of (1) **linear independence between logit and continuous predictors** generally holds, although the slightly higher logit for weekend days, insomnia, and females; random effects are **quite normally distributed**, with only a **slight deviation from normality in the lower tail** of the random intercept distribution; there is (3) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`weekday.sleep`*** are associated with a **significant LRT** and a **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - a substantial effect is only estimated for ***`weekday.sleep`*** (lower `worry` on weekend days than on weekdays). Neither `insomnia` nor `sex`, or their interaction show a substantial effect (i.e., despite the slightly higher `worry` in insomnia than in controls, and especially in insomnia girls compared to control girls, these differences are not substantial)
 
@@ -1487,15 +1564,16 @@ res <- rbind(res,cbind(measure="worry.cat",glmerAn(long=ema,wide=demos,resp="wor
 `mood` is a one-item ordinal variable, and it was dicotomized to be modeled by assuming a **binomial distribution** for the residuals (i.e., **logistic regression**).
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="mood.cat",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000", # GLMER with mean-centered pred.
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000", 
         family="binomial",link="logit",transform="exp", # logistic regression (exponentiated coefficients = odds ratios)
-        outputs=c("fit","mComp","coeff","plotEff"),
-        coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="weekday.sleep",p.adjust.method="BH",
+        coeff.models=c("weekday.sleep","insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia")
 
 # keeping key results
 res <- rbind(res,cbind(measure="mood.cat",glmerAn(long=ema,wide=demos,resp="mood.cat",fix.eff=predictors[1:(length(predictors)-1)],
                                    modelType=c("GLMER"),mc.predictors="TotalSteps1000",family="binomial",link="logit",
+                                   mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                    outputs="key.results",key.predictor="insomnia",key.model="insomnia",dot.size=3,messages=FALSE)))
 ```
 
@@ -1505,9 +1583,9 @@ res <- rbind(res,cbind(measure="mood.cat",glmerAn(long=ema,wide=demos,resp="mood
 
 - the assumption of (1) **linear independence between logit and continuous predictors** generally holds; (2) random effects are **quite normally distributed**, with only a **slight deviation from normality in the lower tail** of the random intercept distribution; there is (3) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`TotalSteps1000`*** and ***`weekday.sleep`*** are associated with a **significant LRT**, whereas **all predictors but** `insomnia` **and** `sex` show **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
-- substantial effects are only estimated for ***`TotalSteps1000`*** (lower bad `mood` for higher than usual `TotalSteps`), ***`weekday.sleep`*** (lower bad `mood` on weekend days than on weekdays), and ***`sex`*** (lower bad `mood` in boys compared to girls), but only if the interaction is not included in the model. Neither `insomnia` nor `sex`, or their interaction show a substantial effect
+- substantial effects are only estimated for ***`TotalSteps1000`*** (lower bad `mood` for higher than usual `TotalSteps`), and ***`weekday.sleep`*** (lower bad `mood` on weekend days than on weekdays)
 
 <br>
 
@@ -1520,14 +1598,15 @@ Here, we replicate the analyses by considering the aggregate (i.e., mean) score 
 `PsyDist` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="PsyDist",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000", 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="weekday.sleep",p.adjust.method="BH",
         coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,cbind(measure="PsyDist",glmerAn(long=ema,wide=demos,resp="PsyDist",fix.eff=predictors[1:(length(predictors)-1)],
                                    modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                   mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                    outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -1537,7 +1616,7 @@ res <- rbind(res,cbind(measure="PsyDist",glmerAn(long=ema,wide=demos,resp="PsyDi
 
 - both (1) **residuals** and (2) **random effects** are quite **normally distributed** (despite some **deviations in the upper tail** of the residuals distribution) with (3) **homogeneity** between the variances across sex and insomnia levels, and (4) **no substantial linear relationship** between residuals and fitted values; there is (5) **not strong evidence of multicollinearity** as all VIFs are 2 or less, with the only exception of the interactive term
 
-- only ***`TotalSteps1000`*** and ***`weekday.sleep`*** are associated with a **significant LRT** and **stronger evidence** in terms of Aw
+- **none of the specified models** showed a **significant LRT** or **stronger evidence** in terms of Aw compared to the baseline model
 
 - substantial effects are only estimated for ***`TotalSteps1000`*** (lower `PsyDist` for higher than usual `TotalSteps`), and ***`weekday.sleep`*** (lower `PsyDist` on weekend days than on weekdays). Neither `insomnia` nor `sex`, or their interaction show a substantial effect
 
@@ -1548,14 +1627,15 @@ res <- rbind(res,cbind(measure="PsyDist",glmerAn(long=ema,wide=demos,resp="PsyDi
 `fs` is quite normally distributed, thus it is modeled by assuming a **normal distribution** for the residuals.
 ```{r fig.width=12,fig.height=8}
 glmerAn(long=ema,wide=demos,resp="fs",fix.eff=predictors,
-        modelType=c("GLMER"),mc.predictors="TotalSteps1000", # GLMER with mean-centered pred.
-        outputs=c("fit","mComp","coeff","plotEff"),
+        modelType=c("GLMER"),mc.predictors="TotalSteps1000", 
+        outputs=c("fit","mComp","coeff","plotEff"),mComp.baseline="weekday.sleep",p.adjust.method="BH",
         coeff.models=c("insomnia","sex","sex:insomnia"), # showing all models including insomnia
         plot.model="insomnia",show.data=TRUE)
 
 # keeping key results
 res <- rbind(res,cbind(measure="fs",glmerAn(long=ema,wide=demos,resp="fs",fix.eff=predictors[1:(length(predictors)-1)],
                                    modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                   mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                    outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE)))
 ```
 
@@ -1618,7 +1698,7 @@ The figure below shows the t-values associated with the group differences betwee
 PREdictors <- predictors[1:(length(predictors)-2)] # excluding sex and interactive model
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
-                                    family="binomial",link="logit",
+                                    family="binomial",link="logit",mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group",messages=FALSE))
 
 # computing key results for the following diary outcomes
@@ -1628,6 +1708,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
              cbind(measure=diaryVar,glmerAn(long=ema,wide=demos,resp=diaryVar,fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                             family=fam[1],link=fam[2],key.model="insomnia.group",key.predictor="insomnia.group",
                                             modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                            mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                             outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res$robCheck <- "Original"
@@ -1649,34 +1730,34 @@ key.resPlot(RES,robCheck = "robCheck",levels=c("stress.cat","worry.cat","mood.ca
 <br>
 
 Here, we can see that the **differences in** `stress`, `worry`, and `fs` **are substantial**, and **driven by the full DSM insomnia subgroup**, whereas no substantial differences are estimated between the control and the sub-threshold insomnia group.
-```{r fig.width=10,fig.height=6,warning=FALSE,message=FALSE,echo=FALSE}
-plot_grid(list(glmerAn(long=ema,wide=demos,resp="stress.cat",
+```{r fig.width=10,fig.height=6,warning=FALSE,message=FALSE}
+plot_grid(list(glmerAn(long=ema,wide=demos,resp="stress.cat",p.adjust.method="BH",mComp.baseline="weekday.sleep",
                        fix.eff=gsub("insomnia","insomnia.group",predictors)[1:(length(predictors)-2)],
                        mc.predictors="TotalSteps1000",modelType="GLMER",family="binomial",link="logit",return.plot=TRUE,
                        outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",transform="exp",
-                       plot.model="insomnia.group",plot.pred="insomnia.group",dot.size=3),
-               glmerAn(long=ema,wide=demos,resp="worry.cat",
+                       plot.model="insomnia.group",plot.pred="insomnia.group",dot.size=3,message=FALSE),
+               glmerAn(long=ema,wide=demos,resp="worry.cat",p.adjust.method="BH",mComp.baseline="weekday.sleep",
                        fix.eff=gsub("insomnia","insomnia.group",predictors)[1:(length(predictors)-2)],
                        mc.predictors="TotalSteps1000",modelType="GLMER",family="binomial",link="logit",return.plot=TRUE,
                        outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",transform="exp",
-                       plot.model="insomnia.group",plot.pred="insomnia.group",dot.size=3),
-               glmerAn(long=ema,wide=demos,resp="mood.cat",
+                       plot.model="insomnia.group",plot.pred="insomnia.group",dot.size=3,message=FALSE),
+               glmerAn(long=ema,wide=demos,resp="mood.cat",p.adjust.method="BH",mComp.baseline="weekday.sleep",
                        fix.eff=gsub("insomnia","insomnia.group",predictors)[1:(length(predictors)-2)],
                        mc.predictors="TotalSteps1000",modelType="GLMER",family="binomial",link="logit",return.plot=TRUE,
                        outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",transform="exp",
-                       plot.model="insomnia.group",plot.pred="insomnia.group",dot.size=3)))
+                       plot.model="insomnia.group",plot.pred="insomnia.group",dot.size=3,message=FALSE)))
 ```
-```{r fig.width=5,fig.height=6,warning=FALSE,message=FALSE,echo=FALSE}
-plot_grid(list(glmerAn(long=ema,wide=demos,resp="PsyDist",
+```{r fig.width=5,fig.height=6,warning=FALSE,message=FALSE}
+plot_grid(list(glmerAn(long=ema,wide=demos,resp="PsyDist",p.adjust.method="BH",
                        fix.eff=gsub("insomnia","insomnia.group",predictors)[1:(length(predictors)-2)],
                        mc.predictors="TotalSteps1000",modelType="GLMER",return.plot=TRUE,
                        outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",
-                       plot.model="insomnia.group",plot.pred="insomnia.group",show.data=TRUE),
-               glmerAn(long=ema,wide=demos,resp="fs",
+                       plot.model="insomnia.group",plot.pred="insomnia.group",show.data=TRUE,message=FALSE),
+               glmerAn(long=ema,wide=demos,resp="fs",p.adjust.method="BH",
                        fix.eff=gsub("insomnia","insomnia.group",predictors)[1:(length(predictors)-2)],
                        mc.predictors="TotalSteps1000",modelType="GLMER",return.plot=TRUE,
                        outputs=c("mComp","coeff","plotEff"),coeff.models="insomnia.group",
-                       plot.model="insomnia.group",plot.pred="insomnia.group",show.data=TRUE)))
+                       plot.model="insomnia.group",plot.pred="insomnia.group",show.data=TRUE,message=FALSE)))
 ```
 
 <br>
@@ -1704,6 +1785,7 @@ The figure below shows the t-values associated with the group differences betwee
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat",fix.eff=c("covid19",PREdictors),
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",family="binomial",link="logit",
+                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following diary outcomes
@@ -1712,6 +1794,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
   res2 <- rbind(res2,cbind(measure=diaryVar,glmerAn(long=ema,wide=demos,resp=diaryVar,fix.eff=c("covid19",PREdictors),
                                                     family=fam[1],link=fam[2],key.model="insomnia",key.predictor="insomnia",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "covid19"
@@ -1755,6 +1838,7 @@ res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat"
                                            fix.eff=c("covid19",gsub("insomnia","insomnia.group",PREdictors)),
                                            modelType=c("GLMER"),mc.predictors="TotalSteps1000",
                                            family="binomial",link="logit",messages=FALSE,
+                                           mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                            outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group"))
 
 # computing key results for the following diary outcomes
@@ -1764,6 +1848,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
                                                     fix.eff=c("covid19",gsub("insomnia","insomnia.group",PREdictors)),
                                                     family=fam[1],link=fam[2],key.model="insomnia.group",key.predictor="insomnia.group",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "covid19.insomnia.group"
@@ -1808,6 +1893,7 @@ cat("Excluded",nrow(ema)-nrow(EMA),"days, ",nrow(demos)-nrow(DEMOS),"participant
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=EMA,wide=DEMOS,resp="stress.cat",fix.eff=PREdictors,
                                            modelType=c("GLMER"),mc.predictors="TotalSteps1000", family="binomial",link="logit",
+                                           mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                            outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following sleep outcomes
@@ -1816,6 +1902,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
   res2 <- rbind(res2,cbind(measure=diaryVar,glmerAn(long=EMA,wide=DEMOS,resp=diaryVar,fix.eff=PREdictors,
                                                     family=fam[1],link=fam[2],key.model="insomnia",key.predictor="insomnia",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "majMiss"
@@ -1842,6 +1929,7 @@ As a further check, we also inspect the results of the `majMiss` robustness chec
 res2 <- cbind(measure="stress.cat",glmerAn(long=EMA,wide=DEMOS,resp="stress.cat",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                            modelType=c("GLMER"),mc.predictors="TotalSteps1000",
                                            family="binomial",link="logit",messages=FALSE,
+                                           mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                            outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group"))
 
 # computing key results for the following diary outcomes
@@ -1851,6 +1939,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
                                                     fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                                     family=fam[1],link=fam[2],key.model="insomnia.group",key.predictor="insomnia.group",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "majMiss.insomnia.group"
@@ -1888,6 +1977,7 @@ The figure below shows the t-values associated with the group differences betwee
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress.cat",fix.eff=c("weekday.sleep","insomnia","sex"),
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",family="binomial",link="logit",
+                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following diary outcomes
@@ -1896,6 +1986,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
   res2 <- rbind(res2,cbind(measure=diaryVar,glmerAn(long=ema,wide=demos,resp=diaryVar,fix.eff=c("weekday.sleep","insomnia","sex"),
                                                     family=fam[1],link=fam[2],key.model="insomnia",key.predictor="insomnia",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "no-TotalSteps"
@@ -1921,6 +2012,7 @@ As a further check, we also inspect the results of the `majMiss` robustness chec
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=EMA,wide=DEMOS,resp="stress.cat",fix.eff=c("weekday.sleep","insomnia.group","sex"),
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",family="binomial",link="logit",messages=FALSE,
+                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group"))
 
 # computing key results for the following diary outcomes
@@ -1929,6 +2021,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
   res2 <- rbind(res2,cbind(measure=diaryVar,glmerAn(long=EMA,wide=DEMOS,resp=diaryVar,fix.eff=c("weekday.sleep","insomnia.group","sex"),
                                                     family=fam[1],link=fam[2],key.model="insomnia.group",key.predictor="insomnia.group",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "no-TotalSteps.insomnia.group"
@@ -2022,6 +2115,7 @@ The figure below shows the t-values associated with the group differences betwee
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress",fix.eff=PREdictors,
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following diary outcomes
@@ -2031,6 +2125,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist")){
                                                     family=fam[1],link=fam[2],nAGQ=0, # nAGQ = 0 to reach convergence with PsyDist
                                                     key.model="insomnia",key.predictor="insomnia",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "distr.Normal.Gamma"
@@ -2054,6 +2149,7 @@ As a further check, we also inspect the results of the *distr.Normal.Gamma* robu
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group",messages=FALSE))
 
 # computing key results for the following diary outcomes
@@ -2064,6 +2160,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist")){
                                                     family=fam[1],link=fam[2],nAGQ=0, # nAGQ = 0 to reach convergence with PsyDist
                                                     key.model="insomnia.group",key.predictor="insomnia.group",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "distr.Normal.Gamma.insomnia.group"
@@ -2099,11 +2196,13 @@ Here, we account for the **ordinal nature** of item ratings by replicating the a
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress",fix.eff=PREdictors,
                                            modelType=c("CLMM"),mc.predictors="TotalSteps1000",
+                                           mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                            outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following diary outcomes
 for(diaryVar in c("worry.cat","mood.cat")){
   res2 <- rbind(res2,cbind(measure=diaryVar,glmerAn(long=ema,wide=demos,resp=gsub(".cat","",diaryVar),fix.eff=PREdictors,
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     modelType=c("CLMM"),mc.predictors="TotalSteps1000",messages=FALSE,
                                                     key.model="insomnia",key.predictor="insomnia",outputs="key.results"))) }
 # joining with the main results
@@ -2128,6 +2227,7 @@ As a further check, we also inspect the results of the *distr.CLMM* robustness c
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=ema,wide=demos,resp="stress",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                     modelType=c("CLMM"),mc.predictors="TotalSteps1000",
+                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group",messages=FALSE))
 
 # computing key results for the following diary outcomes
@@ -2137,6 +2237,7 @@ for(diaryVar in c("worry.cat","mood.cat")){
                                                     fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                                     key.model="insomnia.group",key.predictor="insomnia.group",
                                                     modelType=c("CLMM"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "distr.CLMM.insomnia.group"
@@ -2208,7 +2309,7 @@ cat("Excluded",nrow(ema)-nrow(EMA),"days, ",nrow(demos)-nrow(DEMOS),"participant
 # computing key results for stress
 res2 <- cbind(measure="stress.cat",glmerAn(long=EMA,wide=DEMOS,resp="stress.cat",fix.eff=PREdictors,
                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
-                                    family="binomial",link="logit",
+                                    family="binomial",link="logit",mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                     outputs="key.results",key.predictor="insomnia",key.model="insomnia",messages=FALSE))
 
 # computing key results for the following sleep outcomes
@@ -2218,6 +2319,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
   res2 <- rbind(res2,cbind(measure=diaryVar,glmerAn(long=EMA,wide=DEMOS,resp=diaryVar,fix.eff=PREdictors,nAGQ=nAGQ,
                                                     family=fam[1],link=fam[2],key.model="insomnia",key.predictor="insomnia",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "lateResp"
@@ -2242,6 +2344,7 @@ As a further check, we also inspect the results of the `lateResp` robustness che
 res2 <- cbind(measure="stress.cat",glmerAn(long=EMA,wide=DEMOS,resp="stress.cat",fix.eff=gsub("insomnia","insomnia.group",PREdictors),
                                            modelType=c("GLMER"),mc.predictors="TotalSteps1000",
                                            family="binomial",link="logit",messages=FALSE,
+                                           mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                            outputs="key.results",key.predictor="insomnia.group",key.model="insomnia.group"))
 
 # computing key results for the following diary outcomes
@@ -2252,6 +2355,7 @@ for(diaryVar in c("worry.cat","mood.cat","PsyDist","fs")){
                                                     fix.eff=gsub("insomnia","insomnia.group",PREdictors),nAGQ=nAGQ,
                                                     family=fam[1],link=fam[2],key.model="insomnia.group",key.predictor="insomnia.group",
                                                     modelType=c("GLMER"),mc.predictors="TotalSteps1000",
+                                                    mComp.baseline="weekday.sleep",p.adjust.method="BH",
                                                     outputs="key.results",messages=FALSE))) }
 # joining with the main results
 res2$robCheck <- "lateResp.insomnia.group"

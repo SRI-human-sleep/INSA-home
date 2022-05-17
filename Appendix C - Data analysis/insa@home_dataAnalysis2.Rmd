@@ -708,7 +708,7 @@ glmerAn(long=ema,wide=demos,resp="TIB.SSDc",fix.eff=predictors,
 # plotting effects without observed data (zoom in)
 glmerAn(long=ema,wide=demos,resp="TIB.SSDc",fix.eff=predictors,
         mc.predictors=c("SO.num","TotalSteps1000"),gmc.predictors=c("BMI","age"),modelType="GLMER",family="gamma",link="log",
-        outputs="plotEff",plot.model="insomnia",dot.size=2)
+        outputs="plotEff",plot.model="insomnia",dot.size=2,message=FALSE)
 
 # keeping key results
 res <- rbind(res,
@@ -2416,22 +2416,4 @@ In conclusion, the results obtained with the main analyses are **overall robust*
 
 <br>
 
-# References {#ref}
-
-- Cranford, J. A., Shrout, P. E., Iida, M., Rafaeli, E., Yip, T., & Bolger, N. (2006). A Procedure for Evaluating Sensitivity to Within-Person Change: Can Mood Measures in Diary Studies Detect Change Reliably? *Personality and Social Psychology Bulletin*, 32(7), 917–929. https://doi.org/10.1177/0146167206287721
-
-- Geldhof, G. J., Preacher, K. J., & Zyphur, M. J. (2014). Reliability estimation in a multilevel confirmatory factor analysis framework. *Psychological Methods*, 19(1), 72–91. https://doi.org/10.1037/a0032138
-
-- Green, J. A. (2021). Too many zeros and/or highly skewed? A tutorial on modelling health behaviour as count data with Poisson and negative binomial regression. *Health Psychology and Behavioral Medicine, 9*(1), 436-455. https://doi.org/10.1080/21642850.2021.1920416
-
-- Hox, J. J. (2010). *Multilevel Analysis: Techniques and Applications (2nd ed.)*. Routledge.
-
-- Jak, S., & Jorgensen, T. D. (2017). Relating Measurement Invariance, Cross-Level Invariance, and Multilevel Reliability. *Frontiers in Psychology*, 8(OCT), 1–9. https://doi.org/10.3389/fpsyg.2017.01640
-
-- Menghini, L., Yuksel, D., Goldstone, A., Baker, F. C., & de Zambotti, M. (2021). Performance of Fitbit Charge 3 against polysomnography in measuring sleep in adolescent boys and girls. *Chronobiology International*, 38(7):1010-1022. https://doi.org/10.1080/07420528.2021.1903481
-
-- Ng, V. K., & Cribbie, R. A. (2017). Using the gamma generalized linear model for modeling continuous, skewed and heteroscedastic outcomes in psychology. *Current Psychology, 36*(2), 225-235. https://doi.org/10.1007/s12144-015-9404-0
-
-<br>
-
-## R packages
+# R packages {#ref}

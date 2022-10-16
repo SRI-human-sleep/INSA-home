@@ -2636,6 +2636,9 @@ Here, we visualize representative examples of the most substantial and consisten
 ```{r fig.width=7,fig.height=4.5,warning=FALSE,message=FALSE}
 predictors <- c("TotalSteps1000","weekday.sleep","BMI","age","insomnia")
 dat <- ema
+dat$TIB.SSDc <- dat$TIB.SSD + 0.001
+dat$TST.SSDc <- dat$TST.SSD + 0.001
+dat$SO.num.SSDc <- dat$SO.num.SSD + 0.001
 dat$insomnia <- as.factor(gsub("1","Insomnia",gsub("0","Controls",dat$insomnia)))
 dat$sex <- factor(gsub("M","Boys",gsub("F","Girls",dat$sex)),levels=c("Girls","Boys"))
 library(gridExtra)
